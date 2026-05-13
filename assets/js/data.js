@@ -3,6 +3,31 @@
 
 const SAMPLE_AMOUNT = 1000;
 
+// Wise quote API — used by the in-dashboard fee calculator
+const WISE_API = {
+  url: 'https://api.denkenites.com/wise/quotes',
+  tenantAppUrl: 'https://globalsquirrelsqa.denkenites.com'
+};
+
+// Currencies offered in the Wise calculator dropdowns. Edit freely.
+const WISE_CURRENCIES = [
+  'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'CHF', 'JPY', 'CNY', 'HKD', 'SGD',
+  'NZD', 'INR', 'PHP', 'IDR', 'VND', 'THB', 'MYR',
+  'BRL', 'MXN', 'ARS', 'CLP', 'COP', 'PEN',
+  'ZAR', 'KES', 'NGN', 'EGP', 'MAD',
+  'AED', 'SAR', 'TRY', 'ILS',
+  'PLN', 'CZK', 'HUF', 'RON', 'NOK', 'SEK', 'DKK',
+  'RUB', 'UAH'
+];
+
+const WISE_PAYIN_OPTIONS = [
+  'BANK_TRANSFER', 'BALANCE', 'VISA_CREDIT', 'VISA_DEBIT', 'INTERNATIONAL_CREDIT'
+];
+
+const WISE_PAYOUT_OPTIONS = [
+  'BANK_TRANSFER', 'BALANCE', 'SWIFT'
+];
+
 const FEES = {
   bank:    { kind: 'flat',    amount: 5,    label: 'Bank $5 flat' },
   card:    { kind: 'percent', rate: 0.03,   label: 'Card 3%' },

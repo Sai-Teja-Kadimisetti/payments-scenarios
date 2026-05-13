@@ -967,6 +967,188 @@ function attachEvents() {
   });
 }
 
+// ---------- Wise calculator ----------
+
+let wiseInitialized = false;
+
+function fillSelect(el, values, defaultValue) {
+  el.innerHTML = values.map(v =>
+    `<option value="${v}"${v === defaultValue ? ' selected' : ''}>${v}</option>`
+  ).join('');
+}
+
+function initWiseForm() {
+  if (wiseInitialized) return;
+  fillSelect(document.getElementById('wise-source-currency'), WISE_CURRENCIES, 'USD');
+  fillSelect(document.getElementById('wise-target-currency'), WISE_CURRENCIES, 'MXN');
+  fillSelect(document.getElementById('wise-payin'),           WISE_PAYIN_OPTIONS,  'BANK_TRANSFER');
+  fillSelect(document.getElementById('wise-payout'),          WISE_PAYOUT_OPTIONS, 'BANK_TRANSFER');
+  wiseInitialized = true;
+}
+
+function openWise() {
+  initWiseForm();
+  const modal = document.getElementById('wise-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  document.body.classList.add('no-scroll');
+}
+
+function closeWise() {
+  const modal = document.getElementById('wise-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  if (document.getElementById('help-modal').hidden) {
+    document.body.classList.remove('no-scroll');
+  }
+}
+
+function formatNumber(n, decimals) {
+  if (typeof n !== 'number' || !isFinite(n)) return '—';
+  return n.toLocaleString(undefined, { minimumFractionDigits: decimals != null ? decimals : 2, maximumFractionDigits: decimals != null ? decimals : 4 });
+}
+
+function renderWiseResult(quote, request) {
+  const fee   = quote.fee != null ? formatNumber(quote.fee) : '—';
+  const rate  = quote.rate != null ? formatNumber(quote.rate, 6) : '—';
+  const src   = quote.sourceAmount != null ? formatNumber(quote.sourceAmount)
+              : (request.sourceAmount != null ? formatNumber(request.sourceAmount) : '—');
+  const tgt   = quote.targetAmount != null ? formatNumber(quote.targetAmount)
+              : (request.targetAmount != null ? formatNumber(request.targetAmount) : '—');
+  const eta   = quote.estimatedDelivery || quote.deliveryEstimate || '';
+
+  return `
+    <div class="wise-result__card wise-result__card--ok">
+      <h3 class="wise-result__title">Quote</h3>
+      <dl class="wise-result__grid">
+        <dt>You send</dt>            <dd>${src} <strong>${escapeHtml(request.sourceCurrency)}</strong></dd>
+        <dt>Recipient gets</dt>      <dd>${tgt} <strong>${escapeHtml(request.targetCurrency)}</strong></dd>
+        <dt>Wise fee</dt>            <dd class="wise-result__fee">${fee} <strong>${escapeHtml(request.sourceCurrency)}</strong></dd>
+        <dt>Exchange rate</dt>       <dd>${rate}</dd>
+        ${eta ? `<dt>Estimated delivery</dt><dd>${escapeHtml(String(eta))}</dd>` : ''}
+        <dt>Pay in / Pay out</dt>    <dd>${escapeHtml(request.preferredPayIn)} → ${escapeHtml(request.payOut)}</dd>
+      </dl>
+      <details class="wise-result__raw">
+        <summary>Raw API response</summary>
+        <pre>${escapeHtml(JSON.stringify(quote, null, 2))}</pre>
+      </details>
+    </div>
+  `;
+}
+
+function renderWiseError(message, raw) {
+  return `
+    <div class="wise-result__card wise-result__card--err">
+      <h3 class="wise-result__title">Request failed</h3>
+      <p>${escapeHtml(message)}</p>
+      ${raw ? `<details class="wise-result__raw"><summary>Details</summary><pre>${escapeHtml(raw)}</pre></details>` : ''}
+    </div>
+  `;
+}
+
+async function calculateWise(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const sourceCurrency = document.getElementById('wise-source-currency').value;
+  const targetCurrency = document.getElementById('wise-target-currency').value;
+  const sourceRaw      = document.getElementById('wise-source-amount').value;
+  const targetRaw      = document.getElementById('wise-target-amount').value;
+  const sourceAmount   = parseFloat(sourceRaw);
+  const targetAmount   = parseFloat(targetRaw);
+  const payOut         = document.getElementById('wise-payout').value;
+  const preferredPayIn = document.getElementById('wise-payin').value;
+
+  const resultEl = document.getElementById('wise-result');
+
+  const hasSource = sourceRaw !== '' && isFinite(sourceAmount) && sourceAmount > 0;
+  const hasTarget = targetRaw !== '' && isFinite(targetAmount) && targetAmount > 0;
+
+  if (!sourceCurrency || !targetCurrency) {
+    resultEl.innerHTML = renderWiseError('Pick both source and target currencies.');
+    return;
+  }
+  if (!hasSource && !hasTarget) {
+    resultEl.innerHTML = renderWiseError('Enter either a source or target amount.');
+    return;
+  }
+  if (hasSource && hasTarget) {
+    resultEl.innerHTML = renderWiseError('Enter only one — source or target amount. Leave the other blank.');
+    return;
+  }
+  if (sourceCurrency === targetCurrency) {
+    resultEl.innerHTML = renderWiseError('Source and target currencies are the same — Wise quotes need a conversion.');
+    return;
+  }
+
+  const body = {
+    sourceCurrency,
+    targetCurrency,
+    sourceAmount: hasSource ? sourceAmount : null,
+    targetAmount: hasTarget ? targetAmount : null,
+    payOut,
+    preferredPayIn
+  };
+
+  const btn = document.getElementById('btn-wise-calc');
+  btn.disabled = true;
+  btn.textContent = 'Calculating…';
+  resultEl.innerHTML = `<div class="wise-result__loading">Calling Wise API…</div>`;
+
+  try {
+    const res = await fetch(WISE_API.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-App-Url': WISE_API.tenantAppUrl
+      },
+      body: JSON.stringify(body)
+    });
+
+    const rawText = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(rawText); } catch (_) { /* not JSON */ }
+
+    if (!res.ok) {
+      const msg = (parsed && (parsed.message || parsed.error)) || `HTTP ${res.status} ${res.statusText}`;
+      resultEl.innerHTML = renderWiseError(msg, rawText);
+      return;
+    }
+
+    if (!parsed) {
+      resultEl.innerHTML = renderWiseError('API responded but the body was not JSON.', rawText);
+      return;
+    }
+
+    resultEl.innerHTML = renderWiseResult(parsed, body);
+  } catch (err) {
+    const detail = err && err.message ? ` (${err.message})` : '';
+    const msg = `Couldn't reach the Wise API${detail}. Share the URL where this dashboard is deployed with the developer team so they can allow it to access the API.`;
+    resultEl.innerHTML = renderWiseError(msg);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Calculate quote';
+  }
+}
+
+function attachWiseEvents() {
+  const btn = document.getElementById('btn-wise');
+  if (btn) btn.addEventListener('click', openWise);
+
+  const modal = document.getElementById('wise-modal');
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target.closest('[data-close-modal]')) closeWise();
+    });
+  }
+
+  const form = document.getElementById('wise-form');
+  if (form) form.addEventListener('submit', calculateWise);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal && !modal.hidden) closeWise();
+  });
+}
+
 function openHelp() {
   const modal = document.getElementById('help-modal');
   if (!modal) return;
@@ -1000,5 +1182,6 @@ function attachHelpEvents() {
 document.addEventListener('DOMContentLoaded', () => {
   attachEvents();
   attachHelpEvents();
+  attachWiseEvents();
   render();
 });
