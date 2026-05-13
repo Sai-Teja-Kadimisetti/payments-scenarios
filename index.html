@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payments QA Dashboard</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header__brand">
+        <div class="header__logo">PQ</div>
+        <div>
+          <h1 class="header__title">Payments QA Dashboard</h1>
+          <p class="header__subtitle">Scenario coverage tracker</p>
+        </div>
+      </div>
+      <nav class="proj-switcher" id="project-switcher" aria-label="Project switcher"></nav>
+      <button class="help-btn" id="btn-help" type="button" aria-label="How to use this dashboard" title="How to use this dashboard">
+        <span aria-hidden="true">?</span>
+        <span class="help-btn__label">How it works</span>
+      </button>
+    </header>
+
+    <div class="modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="modal__backdrop" data-close-modal></div>
+      <div class="modal__panel" role="document">
+        <header class="modal__head">
+          <h2 class="modal__title" id="help-title">How this dashboard works</h2>
+          <button class="modal__close" type="button" data-close-modal aria-label="Close help">×</button>
+        </header>
+        <div class="modal__body">
+
+          <section class="help-section">
+            <h3>1 · What this is</h3>
+            <p>A scenario coverage tracker for the payments system. Every unique combination of onboarding deposit, payment setup, plan type, and budget basis is generated as a card. You walk through them, marking each <strong>1st Payment</strong> and <strong>2nd Payment</strong> as Pass or Fail. <strong>Refresh resets everything</strong> — that's intentional, so each QA run starts clean. Use <em>Save snapshot</em> if you want to resume later.</p>
+          </section>
+
+          <section class="help-section">
+            <h3>2 · The two views</h3>
+            <ul>
+              <li><strong>Grid</strong> — every matching scenario as a card with its attributes, fee, Wise badge (if contractor), and Pass/Fail/Reset buttons for both payment stages. Each card also has a <em>Notes</em> field for Jira IDs or error text.</li>
+              <li><strong>Mind Map</strong> — the same scenarios as a collapsible decision tree. Click any branch to expand or collapse. Each branch shows its scenario count and rolled-up Pass / Fail / Pending tallies, so you can spot which paths are healthy and which need attention. Drill all the way to a leaf to mark Pass / Fail right in the tree.</li>
+            </ul>
+            <p>Toggle between them with the <strong>Grid / Mind Map</strong> switch in the top-right of the coverage summary.</p>
+          </section>
+
+          <section class="help-section">
+            <h3>3 · Filtering</h3>
+            <p>Three layers of filters work together. Each layer narrows what you see:</p>
+            <ul>
+              <li><strong>Sidebar (left)</strong> — dimension filters. Click any chip to require that value. Empty group = "match anything for this dimension." Chips are grouped into <em>Onboarding &amp; Payment Setup</em> and <em>Plan &amp; Budget</em>, with Plan Type split under Employee / Contractor sub-headers.</li>
+              <li><strong>Status quick-filter pills</strong> (toolbar) — All · Pending · Partial · Passed · Failed. Each shows a live count. Click one to see only that subset.</li>
+              <li><strong>Search box</strong> (toolbar) — free text matches scenario IDs (e.g. <code>GS-0042</code>), attribute labels (<code>Contractor</code>, <code>Paylink</code>), and your notes.</li>
+            </ul>
+            <p><strong>Reset filters</strong> (sidebar) clears chip selections but keeps your pass/fail marks. <strong>Reset statuses &amp; notes</strong> does the opposite.</p>
+          </section>
+
+          <section class="help-section">
+            <h3>4 · Marking a scenario</h3>
+            <p>Each scenario has two payment stages — <strong>1st Payment</strong> and <strong>2nd Payment</strong> — to verify the recurring nature of the payment. Each stage has its own:</p>
+            <ul>
+              <li><strong>✓ Pass</strong> — payment ran as expected</li>
+              <li><strong>✗ Fail</strong> — payment did not work; type a note explaining why or paste a Jira ID</li>
+              <li><strong>↻ Reset</strong> — clears that stage back to pending</li>
+            </ul>
+            <p>The card border colour reflects the combined state:</p>
+            <p class="legend-row">
+              <span class="legend legend--pass">both passed</span>
+              <span class="legend legend--fail">any failed</span>
+              <span class="legend legend--partial">one of two marked</span>
+              <span class="legend legend--pending">nothing marked yet</span>
+            </p>
+          </section>
+
+          <section class="help-section">
+            <h3>5 · Fees shown on each card</h3>
+            <p>Computed against a fixed $1,000 sample so the math is consistent:</p>
+            <ul>
+              <li><strong>Bank</strong> methods (Auto-pay Bank, Paylink Bank) → <strong>$5.00 flat</strong></li>
+              <li><strong>Card</strong> methods (Auto-pay Card, Paylink Card) → <strong>3% = $30.00</strong></li>
+              <li><strong>Invoicing</strong> → <strong>2% = $20.00</strong></li>
+              <li>Contractor plans (Contractor Plan or COR) → additional <strong>Wise fee applies</strong> badge</li>
+            </ul>
+          </section>
+
+          <section class="help-section">
+            <h3>6 · Export, Import, Snapshot</h3>
+            <ul>
+              <li><strong>⬇ Export CSV</strong> — downloads the currently displayed scenarios with their statuses, notes, and computed fees. Filenames include a timestamp so you can keep multiple runs.</li>
+              <li><strong>⬆ Import CSV</strong> — re-applies a previously exported CSV. Matches by scenario ID; unknown IDs are skipped with a toast count. Merges into the current state (does not clear what's already there).</li>
+              <li><strong>Save snapshot</strong> (sidebar) — keeps your statuses + notes in this browser. Survives refresh, but must be loaded explicitly with <strong>Load snapshot</strong>. <strong>Clear snapshot</strong> removes the saved copy.</li>
+            </ul>
+            <p>Use Export / Import to share work between machines or teammates. Use Snapshot to pause and resume on the same machine.</p>
+          </section>
+
+          <section class="help-section">
+            <h3>7 · Business rules baked in</h3>
+            <ul>
+              <li><strong>Onboarding Deposit = No</strong> → no Deposit Frequency. The chip is hidden, and the Mind Map skips that level for those scenarios.</li>
+            </ul>
+          </section>
+
+          <section class="help-section">
+            <h3>Got 60 seconds? Try this</h3>
+            <ol>
+              <li>Click <strong>Auto-pay Card</strong> in the sidebar, then <strong>Contractor Plan</strong>. The count drops to 72.</li>
+              <li>Mark a few 1st Payments as Pass and one 2nd Payment as Fail. Notice the summary and progress bar update live.</li>
+              <li>Switch to <strong>Mind Map</strong>. The failed branch lights up red all the way to the root.</li>
+              <li>Type a note on the failed card. Click <strong>⬇ Export CSV</strong>. The note travels with the file.</li>
+              <li>Refresh the page → everything resets. (Click <strong>⬆ Import CSV</strong> to restore from the file you just exported.)</li>
+            </ol>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="app__main">
+      <aside class="sidebar" aria-label="Filters">
+        <div class="sidebar__heading">
+          <h2>Filters</h2>
+        </div>
+        <div id="filters"></div>
+        <div class="sidebar__actions">
+          <button class="btn-secondary" id="btn-reset-filters" type="button">Reset filters</button>
+          <button class="btn-secondary" id="btn-reset-statuses" type="button">Reset statuses &amp; notes</button>
+        </div>
+        <div class="sidebar__actions sidebar__actions--snapshot">
+          <div class="sidebar__group-title">Snapshot (optional)</div>
+          <button class="btn-secondary" id="btn-save-snapshot" type="button">Save snapshot</button>
+          <button class="btn-secondary" id="btn-load-snapshot" type="button">Load snapshot</button>
+          <button class="btn-secondary btn-secondary--ghost" id="btn-clear-snapshot" type="button">Clear snapshot</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="summary" id="summary" aria-label="Coverage summary"></section>
+        <div class="toolbar" id="toolbar" aria-label="Quick filters and search">
+          <div class="toolbar__group quick-filters" id="quick-filters" role="group" aria-label="Status filter"></div>
+          <div class="toolbar__group toolbar__group--grow">
+            <input id="search-input" type="search" class="search-input"
+                   placeholder="Search ID, label, method, plan, note..."
+                   aria-label="Search scenarios" />
+          </div>
+          <div class="toolbar__group">
+            <button class="btn-icon btn-icon--export" id="btn-export-csv" type="button" title="Export filtered scenarios as CSV">
+              <span class="icon-pill icon-pill--export" aria-hidden="true">
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 2v9"/>
+                  <path d="M4 7l4 4 4-4"/>
+                  <path d="M3 14h10"/>
+                </svg>
+              </span>
+              Export CSV
+            </button>
+            <button class="btn-icon btn-icon--import" id="btn-import-csv" type="button" title="Import a previously exported CSV to restore statuses and notes">
+              <span class="icon-pill icon-pill--import" aria-hidden="true">
+                <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 11V2"/>
+                  <path d="M4 6l4-4 4 4"/>
+                  <path d="M3 14h10"/>
+                </svg>
+              </span>
+              Import CSV
+            </button>
+            <input id="import-input" type="file" accept=".csv,text/csv" hidden />
+          </div>
+        </div>
+        <section id="grid-wrap" aria-label="Scenarios"></section>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

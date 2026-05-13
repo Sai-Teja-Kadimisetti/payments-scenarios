@@ -1,0 +1,30 @@
+# Local Claude Code settings — not for source control
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node (defensive — this project has no dependencies, but in case anything is added later)
+node_modules/
+
+# Build / temp
+dist/
+build/
+tmp/
+.cache/
