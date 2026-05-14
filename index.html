@@ -105,7 +105,7 @@
 
           <section class="help-section">
             <h3>1 · What this is</h3>
-            <p>A scenario coverage tracker for the payments system. Every unique combination of onboarding deposit, payment setup, plan type, and budget basis is generated as a card. You walk through them, marking each <strong>1st Payment</strong> and <strong>2nd Payment</strong> as Pass or Fail. <strong>Refresh resets everything</strong> — that's intentional, so each QA run starts clean. Use <em>Save snapshot</em> if you want to resume later.</p>
+            <p>A scenario coverage tracker for the payments system. Every unique combination of nine dimensions — onboarding deposit, deposit frequency, payment type, payment method, plan type, payment frequency, plan basis, budget basis, and profile add/invite basis — is generated as a card (4,800 in total for Global Squirrels). You walk through them, marking each <strong>1st Payment</strong> and <strong>2nd Payment</strong> as Pass or Fail. <strong>Refresh resets everything</strong> — that's intentional, so each QA run starts clean. Use <em>Save snapshot</em> if you want to resume later.</p>
           </section>
 
           <section class="help-section">
@@ -157,7 +157,13 @@
           </section>
 
           <section class="help-section">
-            <h3>6 · Export, Import, Snapshot</h3>
+            <h3>6 · Wise fee calculator</h3>
+            <p>The <strong>$ Wise calculator</strong> button in the header opens a live calculator that calls the Wise quote API. Pick the source and target currencies, enter either a source or target amount (leave the other blank), choose pay-in and pay-out rails, and click <strong>Calculate quote</strong>. The result panel shows the exchange rate, Wise fee, recipient amount, estimated delivery, plus the raw API response for verification.</p>
+            <p>The calculator only works when the dashboard is hosted on a Denken domain (CORS). If you see a <em>Failed to fetch</em> error, share the dashboard's deployed URL with the developer team so they can allow it.</p>
+          </section>
+
+          <section class="help-section">
+            <h3>7 · Export, Import, Snapshot</h3>
             <ul>
               <li><strong>⬇ Export CSV</strong> — downloads the currently displayed scenarios with their statuses, notes, and computed fees. Filenames include a timestamp so you can keep multiple runs.</li>
               <li><strong>⬆ Import CSV</strong> — re-applies a previously exported CSV. Matches by scenario ID; unknown IDs are skipped with a toast count. Merges into the current state (does not clear what's already there).</li>
@@ -167,7 +173,7 @@
           </section>
 
           <section class="help-section">
-            <h3>7 · Business rules baked in</h3>
+            <h3>8 · Business rules baked in</h3>
             <ul>
               <li><strong>Onboarding Deposit = No</strong> → no Deposit Frequency. The chip is hidden, and the Mind Map skips that level for those scenarios.</li>
             </ul>
@@ -176,7 +182,7 @@
           <section class="help-section">
             <h3>Got 60 seconds? Try this</h3>
             <ol>
-              <li>Click <strong>Auto-pay Card</strong> in the sidebar, then <strong>Contractor Plan</strong>. The count drops to 72.</li>
+              <li>Click <strong>Auto-pay Card</strong> in the sidebar, then <strong>Contractor Plan</strong>. The count drops to 192.</li>
               <li>Mark a few 1st Payments as Pass and one 2nd Payment as Fail. Notice the summary and progress bar update live.</li>
               <li>Switch to <strong>Mind Map</strong>. The failed branch lights up red all the way to the root.</li>
               <li>Type a note on the failed card. Click <strong>⬇ Export CSV</strong>. The note travels with the file.</li>

@@ -42,7 +42,7 @@ const FILTER_GROUPS = [
   },
   {
     title: 'Plan & Budget',
-    dimensions: ['planType', 'paymentFrequency', 'planBasis', 'budgetBasis']
+    dimensions: ['planType', 'paymentFrequency', 'planBasis', 'budgetBasis', 'profileBasis']
   }
 ];
 
@@ -54,7 +54,8 @@ const DIMENSION_LABELS = {
   planType:         'Plan Type',
   paymentFrequency: 'Payment Frequency',
   planBasis:        'Plan Basis',
-  budgetBasis:      'Budget Basis'
+  budgetBasis:      'Budget Basis',
+  profileBasis:     'Profile Add/Invite Basis'
 };
 
 const PROJECTS = {
@@ -83,7 +84,8 @@ const PROJECTS = {
       ],
       paymentFrequency:  ['Monthly', 'Semi-Monthly', 'Weekly'],
       planBasis:         ['Hourly', 'Monthly'],
-      budgetBasis:       ['Hourly', 'Monthly']
+      budgetBasis:       ['Hourly', 'Monthly'],
+      profileBasis:      ['Hourly', 'Monthly']
     }
   },
   medsquirrels: {

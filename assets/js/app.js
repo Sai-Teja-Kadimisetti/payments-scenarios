@@ -5,7 +5,7 @@ const RENDER_CAP = 500;
 
 const DIM_ORDER = [
   'deposit', 'depositFrequency', 'paymentType', 'paymentMethod',
-  'planType', 'paymentFrequency', 'planBasis', 'budgetBasis'
+  'planType', 'paymentFrequency', 'planBasis', 'budgetBasis', 'profileBasis'
 ];
 
 const SNAPSHOT_KEY = 'payments-qa-snapshot-v1';
@@ -14,7 +14,7 @@ const state = {
   projectId: 'globalsquirrels',
   filters: {
     deposit: [], depositFrequency: [], paymentType: [], paymentMethod: [],
-    planType: [], paymentFrequency: [], planBasis: [], budgetBasis: []
+    planType: [], paymentFrequency: [], planBasis: [], budgetBasis: [], profileBasis: []
   },
   statuses: {},
   notes: {},
@@ -44,7 +44,8 @@ function buildScenarios(project) {
     for (const planType of d.planType)
     for (const paymentFrequency of d.paymentFrequency)
     for (const planBasis of d.planBasis)
-    for (const budgetBasis of d.budgetBasis) {
+    for (const budgetBasis of d.budgetBasis)
+    for (const profileBasis of d.profileBasis) {
       idx++;
       const id = project.code + '-' + String(idx).padStart(4, '0');
       scenarios.push({
@@ -56,7 +57,8 @@ function buildScenarios(project) {
         planType,
         paymentFrequency,
         planBasis,
-        budgetBasis
+        budgetBasis,
+        profileBasis
       });
     }
   }
@@ -89,7 +91,8 @@ function applyFilters(scenarios) {
     matchesFilter(s, 'planType',         f.planType) &&
     matchesFilter(s, 'paymentFrequency', f.paymentFrequency) &&
     matchesFilter(s, 'planBasis',        f.planBasis) &&
-    matchesFilter(s, 'budgetBasis',      f.budgetBasis)
+    matchesFilter(s, 'budgetBasis',      f.budgetBasis) &&
+    matchesFilter(s, 'profileBasis',     f.profileBasis)
   );
 }
 
@@ -107,7 +110,7 @@ function applySearch(scenarios) {
       s.deposit, s.depositFrequency, s.paymentType,
       s.paymentMethod.label, s.paymentMethod.feeKey,
       s.planType.label, s.planType.category,
-      s.paymentFrequency, s.planBasis, s.budgetBasis,
+      s.paymentFrequency, s.planBasis, s.budgetBasis, s.profileBasis,
       (state.notes[s.id] || '')
     ].join(' ').toLowerCase();
     return haystack.indexOf(q) !== -1;
@@ -299,6 +302,7 @@ function renderCard(s) {
         <span class="tag">Pay. Freq: ${s.paymentFrequency}</span>
         <span class="tag">Plan: ${s.planBasis}</span>
         <span class="tag">Budget: ${s.budgetBasis}</span>
+        <span class="tag">Profile: ${s.profileBasis}</span>
       </div>
       <div class="card__fee">
         <span class="card__fee-label">Fee on ${formatMoney(SAMPLE_AMOUNT)}:</span>
@@ -614,6 +618,7 @@ function toRow(s) {
     paymentFrequency: s.paymentFrequency,
     planBasis: s.planBasis,
     budgetBasis: s.budgetBasis,
+    profileBasis: s.profileBasis,
     feeAmount: Number(fee.amount.toFixed(2)),
     feeRule: fee.label,
     wiseApplies: fee.isContractor,
