@@ -30,9 +30,20 @@
       </div>
       <nav class="proj-switcher" id="project-switcher" aria-label="Project switcher"></nav>
       <div class="header__actions">
-        <button class="help-btn help-btn--wise" id="btn-wise" type="button" aria-label="Wise fee calculator" title="Wise fee calculator">
+        <button class="help-btn help-btn--wise" id="btn-wise" type="button" aria-label="Wise fee calculator" title="Wise fee calculator (API)">
           <span aria-hidden="true">$</span>
           <span class="help-btn__label">Wise calculator</span>
+        </button>
+        <button class="help-btn help-btn--converter" id="btn-wise-converter" type="button" aria-label="Open Wise currency converter" title="Open Wise currency converter on wise.com">
+          <span aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 5h10"/>
+              <path d="M10 2l3 3-3 3"/>
+              <path d="M13 11H3"/>
+              <path d="M6 8l-3 3 3 3"/>
+            </svg>
+          </span>
+          <span class="help-btn__label">Wise converter</span>
         </button>
         <button class="help-btn" id="btn-help" type="button" aria-label="How to use this dashboard" title="How to use this dashboard">
           <span aria-hidden="true">?</span>
@@ -157,9 +168,13 @@
           </section>
 
           <section class="help-section">
-            <h3>6 · Wise fee calculator</h3>
-            <p>The <strong>$ Wise calculator</strong> button in the header opens a live calculator that calls the Wise quote API. Pick the source and target currencies, enter either a source or target amount (leave the other blank), choose pay-in and pay-out rails, and click <strong>Calculate quote</strong>. The result panel shows the exchange rate, Wise fee, recipient amount, estimated delivery, plus the raw API response for verification.</p>
-            <p>The calculator only works when the dashboard is hosted on a Denken domain (CORS). If you see a <em>Failed to fetch</em> error, share the dashboard's deployed URL with the developer team so they can allow it.</p>
+            <h3>6 · Wise tools</h3>
+            <p>Two Wise-related buttons sit in the header:</p>
+            <ul>
+              <li><strong>$ Wise calculator</strong> — opens a modal that calls the Wise quote API live. Pick source and target currencies, enter either a source or target amount, choose pay-in and pay-out rails, click <strong>Calculate quote</strong>. The result panel shows exchange rate, Wise fee, recipient amount, estimated delivery, and the raw API response.</li>
+              <li><strong>⇄ Wise converter</strong> — opens the public <code>wise.com</code> currency converter in a new tab. Pre-fills the currency pair and amount from your last calculator selection (or opens the generic page if you haven't used the calculator yet). Useful for an independent sanity-check against Wise's own UI.</li>
+            </ul>
+            <p>The calculator only works when the dashboard is hosted on a Denken domain (CORS). If you see a <em>Failed to fetch</em> error, share the dashboard's deployed URL with the developer team so they can allow it. The converter has no such restriction — it's just a public link.</p>
           </section>
 
           <section class="help-section">

@@ -1135,6 +1135,26 @@ async function calculateWise(e) {
   }
 }
 
+function openWiseConverter() {
+  const sourceEl = document.getElementById('wise-source-currency');
+  const targetEl = document.getElementById('wise-target-currency');
+  const amountEl = document.getElementById('wise-source-amount');
+
+  // If the calculator modal has been opened at least once, the dropdowns
+  // carry the user's last selection. Otherwise fall through to the
+  // generic Wise converter landing page.
+  const source = (sourceEl && sourceEl.value || '').toLowerCase();
+  const target = (targetEl && targetEl.value || '').toLowerCase();
+  const amountRaw = (amountEl && amountEl.value) || '';
+  const amount = amountRaw && parseFloat(amountRaw) > 0 ? amountRaw : '1000';
+
+  let url = 'https://wise.com/in/currency-converter/';
+  if (source && target && source !== target) {
+    url = `https://wise.com/in/currency-converter/${source}-to-${target}-rate?amount=${encodeURIComponent(amount)}`;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 function attachWiseEvents() {
   const btn = document.getElementById('btn-wise');
   if (btn) btn.addEventListener('click', openWise);
@@ -1148,6 +1168,9 @@ function attachWiseEvents() {
 
   const form = document.getElementById('wise-form');
   if (form) form.addEventListener('submit', calculateWise);
+
+  const converterBtn = document.getElementById('btn-wise-converter');
+  if (converterBtn) converterBtn.addEventListener('click', openWiseConverter);
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modal && !modal.hidden) closeWise();

@@ -209,6 +209,20 @@ body {
   background: var(--pass);
 }
 
+.help-btn--converter:hover {
+  background: #ecfeff;
+  border-color: #0891b2;
+  color: #0e7490;
+}
+
+.help-btn--converter > span[aria-hidden] {
+  background: #0891b2;
+}
+
+.help-btn--converter > span[aria-hidden] svg {
+  display: block;
+}
+
 @media (max-width: 700px) {
   .help-btn__label { display: none; }
 }
@@ -457,6 +471,7 @@ body {
 .wise-form__actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .btn-primary {
