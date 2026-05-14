@@ -22,6 +22,8 @@
   --partial-soft:#fef3c7;
   --pending:     #94a3b8;
   --pending-soft:#f1f5f9;
+  --wip:         #0284c7;
+  --wip-soft:    #e0f2fe;
 
   --wise:        #b45309;
   --wise-soft:   #fef3c7;
@@ -371,6 +373,7 @@ body {
 .legend--pass::before    { background: var(--pass); }
 .legend--fail::before    { background: var(--fail); }
 .legend--partial::before { background: var(--partial); }
+.legend--wip::before     { background: var(--wip); }
 .legend--pending::before { background: var(--text-mute); }
 
 .legend-row {
@@ -892,6 +895,7 @@ body.no-scroll { overflow: hidden; }
 
 .summary__metric--pass .summary__num   { color: var(--pass); }
 .summary__metric--fail .summary__num   { color: var(--fail); }
+.summary__metric--wip .summary__num    { color: var(--wip); }
 .summary__metric--pending .summary__num { color: var(--text-mute); }
 
 .progress {
@@ -987,6 +991,7 @@ body.no-scroll { overflow: hidden; }
 .qf--pass.is-active    { background: var(--pass);    border-color: var(--pass); }
 .qf--fail.is-active    { background: var(--fail);    border-color: var(--fail); }
 .qf--partial.is-active { background: var(--partial); border-color: var(--partial); }
+.qf--wip.is-active     { background: var(--wip);     border-color: var(--wip); }
 .qf--pending.is-active { background: var(--text-mute); border-color: var(--text-mute); }
 
 .search-input {
@@ -1083,6 +1088,7 @@ body.no-scroll { overflow: hidden; }
 .card--pass    { border-left-color: var(--pass); }
 .card--fail    { border-left-color: var(--fail); }
 .card--partial { border-left-color: var(--partial); }
+.card--wip     { border-left-color: var(--wip); }
 
 .card__head {
   display: flex;
@@ -1112,6 +1118,7 @@ body.no-scroll { overflow: hidden; }
 .card__status-pill--pass    { background: var(--pass-soft);    color: var(--pass); }
 .card__status-pill--fail    { background: var(--fail-soft);    color: var(--fail); }
 .card__status-pill--partial { background: var(--partial-soft); color: var(--partial); }
+.card__status-pill--wip     { background: var(--wip-soft);     color: var(--wip); }
 
 .card__chips {
   display: flex;
@@ -1179,6 +1186,7 @@ body.no-scroll { overflow: hidden; }
 
 .stage--pass { background: var(--pass-soft); border-color: #a7f3d0; }
 .stage--fail { background: var(--fail-soft); border-color: #fecdd3; }
+.stage--wip  { background: var(--wip-soft);  border-color: #7dd3fc; }
 
 .stage__label {
   font-size: 12px;
@@ -1217,6 +1225,12 @@ body.no-scroll { overflow: hidden; }
 .btn--fail.is-active {
   background: var(--fail);
   border-color: var(--fail);
+  color: white;
+}
+
+.btn--wip.is-active {
+  background: var(--wip);
+  border-color: var(--wip);
   color: white;
 }
 
@@ -1355,6 +1369,7 @@ body.no-scroll { overflow: hidden; }
 .tree__node--pass    > .tree__row { border-left-color: var(--pass); }
 .tree__node--fail    > .tree__row { border-left-color: var(--fail); }
 .tree__node--partial > .tree__row { border-left-color: var(--partial); }
+.tree__node--wip     > .tree__row { border-left-color: var(--wip); }
 .tree__node--pending > .tree__row { border-left-color: transparent; }
 
 .tree__caret {
@@ -1427,6 +1442,7 @@ body.no-scroll { overflow: hidden; }
 
 .tree__stat--pass    { color: var(--pass); }
 .tree__stat--fail    { color: var(--fail); }
+.tree__stat--wip     { color: var(--wip); }
 .tree__stat--pending { color: var(--text-mute); font-weight: 500; }
 
 .tree__pct {

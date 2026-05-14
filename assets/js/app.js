@@ -122,7 +122,7 @@ function applyAllFilters(scenarios) {
 }
 
 function countByStatus(scenarios) {
-  const counts = { all: scenarios.length, pass: 0, fail: 0, partial: 0, pending: 0 };
+  const counts = { all: scenarios.length, pass: 0, fail: 0, partial: 0, wip: 0, pending: 0 };
   for (const s of scenarios) counts[cardState(s)]++;
   return counts;
 }
@@ -145,17 +145,19 @@ function formatMoney(n) {
 }
 
 function countStatuses(scenarios) {
-  let pass = 0, fail = 0;
+  let pass = 0, fail = 0, wip = 0;
   const total = scenarios.length * 2;
   for (const s of scenarios) {
     const st = state.statuses[s.id];
     if (!st) continue;
     if (st.first  === 'pass') pass++;
     if (st.first  === 'fail') fail++;
+    if (st.first  === 'wip')  wip++;
     if (st.second === 'pass') pass++;
     if (st.second === 'fail') fail++;
+    if (st.second === 'wip')  wip++;
   }
-  return { total, pass, fail, pending: total - pass - fail };
+  return { total, pass, fail, wip, pending: total - pass - fail - wip };
 }
 
 function cardState(s) {
@@ -163,6 +165,7 @@ function cardState(s) {
   if (!st) return 'pending';
   const f = st.first, sd = st.second;
   if (f === 'fail' || sd === 'fail') return 'fail';
+  if (f === 'wip'  || sd === 'wip')  return 'wip';
   if (f === 'pass' && sd === 'pass') return 'pass';
   if (f || sd) return 'partial';
   return 'pending';
@@ -223,7 +226,7 @@ function renderFilters() {
 }
 
 function renderSummary(filtered) {
-  const { total, pass, fail, pending } = countStatuses(filtered);
+  const { total, pass, fail, wip, pending } = countStatuses(filtered);
   const marked = pass + fail;
   const pct = total === 0 ? 0 : Math.round((marked / total) * 100);
 
@@ -248,6 +251,10 @@ function renderSummary(filtered) {
       <div class="summary__metric summary__metric--fail">
         <span class="summary__num">${fail.toLocaleString()}</span>
         <span class="summary__caption">failed</span>
+      </div>
+      <div class="summary__metric summary__metric--wip">
+        <span class="summary__num">${wip.toLocaleString()}</span>
+        <span class="summary__caption">in progress</span>
       </div>
       <div class="summary__metric summary__metric--pending">
         <span class="summary__num">${pending.toLocaleString()}</span>
@@ -279,6 +286,11 @@ function renderCard(s) {
           <button class="btn btn--fail${v === 'fail' ? ' is-active' : ''}"
                   data-action="fail" data-stage="${stageKey}" data-id="${s.id}" type="button">
             <span aria-hidden="true">✗</span> Fail
+          </button>
+          <button class="btn btn--wip${v === 'wip' ? ' is-active' : ''}"
+                  data-action="wip" data-stage="${stageKey}" data-id="${s.id}" type="button"
+                  title="Mark as In Progress" aria-label="Mark as In Progress">
+            <span aria-hidden="true">⏳</span> WIP
           </button>
           <button class="btn btn--reset" data-action="reset" data-stage="${stageKey}" data-id="${s.id}" type="button"
                   title="Reset this stage" aria-label="Reset this stage">↻</button>
@@ -343,7 +355,8 @@ function buildTree(scenarios) {
     scenarios: [],
     count: scenarios.length,
     pass: 0,
-    fail: 0
+    fail: 0,
+    wip: 0
   };
 
   for (const s of scenarios) {
@@ -379,22 +392,26 @@ function buildTree(scenarios) {
   }
 
   function rollup(node) {
-    let pass = 0, fail = 0;
+    let pass = 0, fail = 0, wip = 0;
     for (const s of node.scenarios) {
       const st = state.statuses[s.id];
       if (!st) continue;
       if (st.first  === 'pass') pass++;
       if (st.first  === 'fail') fail++;
+      if (st.first  === 'wip')  wip++;
       if (st.second === 'pass') pass++;
       if (st.second === 'fail') fail++;
+      if (st.second === 'wip')  wip++;
     }
     for (const child of node.children.values()) {
       rollup(child);
       pass += child.pass;
       fail += child.fail;
+      wip  += child.wip;
     }
     node.pass = pass;
     node.fail = fail;
+    node.wip  = wip;
   }
   rollup(root);
 
@@ -403,8 +420,9 @@ function buildTree(scenarios) {
 
 function nodeStateClass(node) {
   const totalTests = node.count * 2;
-  const marked = node.pass + node.fail;
+  const marked = node.pass + node.fail + node.wip;
   if (node.fail > 0)              return 'tree__node--fail';
+  if (node.wip > 0)               return 'tree__node--wip';
   if (marked === totalTests)      return 'tree__node--pass';
   if (node.pass > 0)              return 'tree__node--partial';
   return 'tree__node--pending';
@@ -421,6 +439,9 @@ function renderLeafActions(s) {
       <button class="btn btn--fail${st[stageKey] === 'fail' ? ' is-active' : ''}"
               data-action="fail" data-stage="${stageKey}" data-id="${s.id}" type="button"
               title="Mark ${label} as Fail" aria-label="Mark ${label} as Fail">✗</button>
+      <button class="btn btn--wip${st[stageKey] === 'wip' ? ' is-active' : ''}"
+              data-action="wip" data-stage="${stageKey}" data-id="${s.id}" type="button"
+              title="Mark ${label} as In Progress" aria-label="Mark ${label} as In Progress">⏳</button>
       <button class="btn btn--reset"
               data-action="reset" data-stage="${stageKey}" data-id="${s.id}" type="button"
               title="Reset ${label}" aria-label="Reset ${label}">↻</button>
@@ -440,7 +461,7 @@ function renderTreeNode(node, isRoot) {
 
   const dimLabel = node.depth >= 0 ? DIMENSION_LABELS[node.dim] : '';
   const totalTests = node.count * 2;
-  const marked = node.pass + node.fail;
+  const marked = node.pass + node.fail + node.wip;
   const pendingNum = totalTests - marked;
   const pct = totalTests === 0 ? 0 : Math.round((marked / totalTests) * 100);
 
@@ -482,6 +503,7 @@ function renderTreeNode(node, isRoot) {
         <span class="tree__count">${node.count.toLocaleString()} scenario${node.count !== 1 ? 's' : ''}</span>
         ${node.pass > 0    ? `<span class="tree__stat tree__stat--pass">✓ ${node.pass.toLocaleString()}</span>` : ''}
         ${node.fail > 0    ? `<span class="tree__stat tree__stat--fail">✗ ${node.fail.toLocaleString()}</span>` : ''}
+        ${node.wip > 0     ? `<span class="tree__stat tree__stat--wip">⏳ ${node.wip.toLocaleString()}</span>` : ''}
         ${pendingNum > 0   ? `<span class="tree__stat tree__stat--pending">○ ${pendingNum.toLocaleString()}</span>` : ''}
         ${marked > 0       ? `<span class="tree__pct">${pct}%</span>` : ''}
       </span>
@@ -580,11 +602,12 @@ function render() {
 function renderQuickFilters(dimFiltered) {
   const counts = countByStatus(dimFiltered);
   const items = [
-    { key: 'all',     label: 'All',     n: counts.all },
-    { key: 'pending', label: 'Pending', n: counts.pending },
-    { key: 'partial', label: 'Partial', n: counts.partial },
-    { key: 'pass',    label: 'Passed',  n: counts.pass },
-    { key: 'fail',    label: 'Failed',  n: counts.fail }
+    { key: 'all',     label: 'All',         n: counts.all },
+    { key: 'pending', label: 'Pending',     n: counts.pending },
+    { key: 'partial', label: 'Partial',     n: counts.partial },
+    { key: 'wip',     label: 'In Progress', n: counts.wip },
+    { key: 'pass',    label: 'Passed',      n: counts.pass },
+    { key: 'fail',    label: 'Failed',      n: counts.fail }
   ];
   return items.map(it => `
     <button class="qf qf--${it.key}${state.statusFilter === it.key ? ' is-active' : ''}"
@@ -705,8 +728,9 @@ function importCsvText(text) {
     const second = secondCol !== -1 ? (row[secondCol] || '').trim() : '';
     const note   = noteCol   !== -1 ? (row[noteCol]   || '')        : '';
 
-    const validFirst  = (first  === 'pass' || first  === 'fail') ? first  : null;
-    const validSecond = (second === 'pass' || second === 'fail') ? second : null;
+    const VALID = ['pass', 'fail', 'wip'];
+    const validFirst  = VALID.indexOf(first)  !== -1 ? first  : null;
+    const validSecond = VALID.indexOf(second) !== -1 ? second : null;
 
     if (validFirst || validSecond) {
       if (!state.statuses[id]) state.statuses[id] = {};

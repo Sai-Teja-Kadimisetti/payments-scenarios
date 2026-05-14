@@ -145,13 +145,15 @@
             <ul>
               <li><strong>✓ Pass</strong> — payment ran as expected</li>
               <li><strong>✗ Fail</strong> — payment did not work; type a note explaining why or paste a Jira ID</li>
+              <li><strong>⏳ WIP</strong> — testing started but waiting on something (replication, backend deploy, vendor confirmation); use it when you've done your part but the result isn't final yet</li>
               <li><strong>↻ Reset</strong> — clears that stage back to pending</li>
             </ul>
             <p>The card border colour reflects the combined state:</p>
             <p class="legend-row">
               <span class="legend legend--pass">both passed</span>
               <span class="legend legend--fail">any failed</span>
-              <span class="legend legend--partial">one of two marked</span>
+              <span class="legend legend--wip">any in progress</span>
+              <span class="legend legend--partial">one passed, the other pending</span>
               <span class="legend legend--pending">nothing marked yet</span>
             </p>
           </section>
